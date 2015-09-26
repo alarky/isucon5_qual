@@ -104,8 +104,8 @@ sub user_from_account {
 sub is_friend {
     my ($another_id) = @_;
     my $user_id = session()->{user_id};
-    my $query = 'SELECT COUNT(1) AS cnt FROM relations WHERE (one = ? AND another = ?) OR (one = ? AND another = ?)';
-    my $cnt = db->select_one($query, $user_id, $another_id, $another_id, $user_id);
+    my $query = 'SELECT COUNT(1) AS cnt FROM relations WHERE (one = ? AND another = ?)';
+    my $cnt = db->select_one($query, $user_id, $another_id);
     return $cnt > 0 ? 1 : 0;
 }
 
@@ -185,6 +185,20 @@ get '/' => [qw(set_global authenticated)] => sub {
 
     my $profile = db->select_row('SELECT * FROM profiles WHERE user_id = ?', current_user()->{id});
 
+    my $friends_query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
+    my %friends = ();
+    my $friends = [];
+    for my $rel (@{db->select_all($friends_query, current_user()->{id})}) {
+        my $key = ($rel->{one} == current_user()->{id} ? 'another' : 'one');
+        $friends{$rel->{$key}} ||= do {
+            my $friend = get_user($rel->{$key});
+            $rel->{account_name} = $friend->{account_name};
+            $rel->{nick_name} = $friend->{nick_name};
+            push @$friends, $rel;
+            $rel;
+        };
+    }
+
     my $entries_query = 'SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5';
     my $entries = [];
     for my $entry (@{db->select_all($entries_query, current_user()->{id})}) {
@@ -214,7 +228,7 @@ SQL
 
     my $entries_of_friends = [];
     for my $entry (@{db->select_all('SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000')}) {
-        next if (!is_friend($entry->{user_id}));
+        next if (!$friends{$entry->{user_id}});
         my ($title) = split(/\n/, $entry->{body});
         $entry->{title} = $title;
         my $owner = get_user($entry->{user_id});
@@ -226,7 +240,7 @@ SQL
 
     my $comments_of_friends = [];
     for my $comment (@{db->select_all('SELECT * FROM comments ORDER BY created_at DESC LIMIT 1000')}) {
-        next if (!is_friend($comment->{user_id}));
+        next if (!$friends{$comment->{user_id}});
         my $entry = db->select_row('SELECT * FROM entries WHERE id = ?', $comment->{entry_id});
         $entry->{is_private} = ($entry->{private} == 1);
         next if ($entry->{is_private} && !permitted($entry->{user_id}));
@@ -239,20 +253,6 @@ SQL
         $comment->{nick_name} = $comment_owner->{nick_name};
         push @$comments_of_friends, $comment;
         last if @$comments_of_friends+0 >= 10;
-    }
-
-    my $friends_query = 'SELECT * FROM relations WHERE one = ? OR another = ? ORDER BY created_at DESC';
-    my %friends = ();
-    my $friends = [];
-    for my $rel (@{db->select_all($friends_query, current_user()->{id}, current_user()->{id})}) {
-        my $key = ($rel->{one} == current_user()->{id} ? 'another' : 'one');
-        $friends{$rel->{$key}} ||= do {
-            my $friend = get_user($rel->{$key});
-            $rel->{account_name} = $friend->{account_name};
-            $rel->{nick_name} = $friend->{nick_name};
-            push @$friends, $rel;
-            $rel;
-        };
     }
 
     my $query = <<SQL;
