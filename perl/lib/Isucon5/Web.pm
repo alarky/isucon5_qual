@@ -72,6 +72,7 @@ SQL
 }
 
 my %user_of;
+my %account_name_of;
 sub current_user {
     my ($self, $c) = @_;
     my $user = stash()->{user};
@@ -81,11 +82,10 @@ sub current_user {
     my $user_id = session()->{user_id};
     return undef if (!$user_id);
 
-    if (exists $user_of{$user_id}) {
-	$user = $user_of{$user_id};
-    } else {
-        $user = $user_of{$user_id} = db->select_row('SELECT id, account_name, nick_name, email FROM users WHERE id=?', $user_id);
-    }
+    get_users();
+
+    $user = $user_of{$user_id};
+
     if (!$user) {
         session()->{user_id} = undef;
         abort_authentication_error();
@@ -95,16 +95,29 @@ sub current_user {
 
 sub get_user {
     my ($user_id) = @_;
-    unless (exists $user_of{$user_id}) {
-	$user_of{$user_id} = db->select_row('SELECT * FROM users WHERE id = ?', $user_id);
-    }
+
+    get_users();
+
     abort_content_not_found() if (!$user_of{$user_id});
     return $user_of{$user_id};
 }
 
+sub get_users {
+    unless (keys %user_of) {
+	my $query = 'SELECT * FROM users';
+	for my $user (@{db->select_all($query)}) {
+		$user_of{$user->{id}} = $user;
+		$account_name_of{$user->{account_name}} = $user;
+	}
+    }
+}
+
 sub user_from_account {
     my ($account_name) = @_;
-    my $user = db->select_row('SELECT * FROM users WHERE account_name = ?', $account_name);
+
+    get_users();
+
+    my $user = $account_name_of{$account_name};
     abort_content_not_found() if (!$user);
     return $user;
 }
