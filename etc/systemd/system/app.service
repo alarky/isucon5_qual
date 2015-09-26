@@ -1,11 +1,12 @@
 [Unit]
 Description=isuxi-perl
 After=mysqld.service
+Before=nginx.service
 
 [Service]
 User=isucon
 WorkingDirectory=/home/isucon/webapp/perl
-ExecStart=/usr/bin/site_perl/start_server --path /tmp/app.sock -- /usr/bin/site_perl/plackup -s Starlet --max-workers 10 -E production -a app.psgi
+ExecStart=/usr/bin/site_perl/start_server --path /tmp/app.sock -- /usr/bin/site_perl/plackup -s Starlet --max-workers 16 -E production -a app.psgi
 
 [Install]
 WantedBy=multi-user.target
