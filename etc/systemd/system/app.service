@@ -1,0 +1,11 @@
+[Unit]
+Description=isuxi-perl
+After=mysqld.service
+
+[Service]
+User=isucon
+WorkingDirectory=/home/isucon/webapp/perl
+ExecStart=/usr/bin/site_perl/plackup -s Starman -p 8080 --workers 10 --disable-keepalive app.psgi
+
+[Install]
+WantedBy=multi-user.target
