@@ -218,11 +218,10 @@ get '/' => [qw(set_global authenticated)] => sub {
     }
 
     my $comments_for_me_query = <<SQL;
-SELECT c.id AS id, c.entry_id AS entry_id, c.user_id AS user_id, c.comment AS comment, c.created_at AS created_at
-FROM comments c
-JOIN entries e ON c.entry_id = e.id
-WHERE e.user_id = ?
-ORDER BY c.id DESC
+SELECT id, entry_id, user_id, comment, created_at
+FROM comments
+WHERE owner_id = ?
+ORDER BY id DESC
 LIMIT 10
 SQL
     my $comments_for_me = [];
@@ -431,9 +430,9 @@ post '/diary/comment/:entry_id' => [qw(set_global authenticated)] => sub {
     if ($entry->{is_private} && !permitted($entry->{user_id})) {
         abort_permission_denied();
     }
-    my $query = 'INSERT INTO comments (entry_id, user_id, comment) VALUES (?,?,?)';
+    my $query = 'INSERT INTO comments (entry_id, owner_id, user_id, comment) VALUES (?,?,?,?)';
     my $comment = $c->req->param('comment');
-    db->query($query, $entry->{id}, current_user()->{id}, $comment);
+    db->query($query, $entry->{id}, $entry->{user_id}, current_user()->{id}, $comment);
     redirect('/diary/entry/'.$entry->{id});
 };
 
