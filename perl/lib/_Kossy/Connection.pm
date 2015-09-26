@@ -1,4 +1,4 @@
-package Kossy::Connection;
+package _Kossy::Connection;
 
 use strict;
 use warnings;

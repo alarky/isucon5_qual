@@ -1,4 +1,4 @@
-package Kossy::Response;
+package _Kossy::Response;
 
 use strict;
 use warnings;

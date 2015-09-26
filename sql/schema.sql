@@ -5,13 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   `nick_name` varchar(32) NOT NULL,
   `email` varchar(255) CHARACTER SET utf8 NOT NULL UNIQUE,
   `passhash` varchar(128) NOT NULL -- SHA2 512 non-binary (hex)
-) DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- DROP TABLE IF EXISTS salts;
 CREATE TABLE IF NOT EXISTS salts (
   `user_id` int NOT NULL PRIMARY KEY,
   `salt` varchar(6)
-) DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS relations;
 CREATE TABLE IF NOT EXISTS relations (
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS relations (
   `another` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY `friendship` (`one`,`another`)
-) DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- DROP TABLE IF EXISTS profiles;
 CREATE TABLE IF NOT EXISTS profiles (
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   `birthday` date NOT NULL, -- yyyy-mm-dd
   `pref` varchar(4) NOT NULL,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- DROP TABLE IF EXISTS entries;
 CREATE TABLE IF NOT EXISTS entries (
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS entries (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY `user_id` (`user_id`,`created_at`),
   KEY `created_at` (`created_at`)
-) DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- DROP TABLE IF EXISTS comments;
 CREATE TABLE IF NOT EXISTS comments (
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS comments (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY `entry_id` (`entry_id`),
   KEY `created_at` (`created_at`)
-) DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- DROP TABLE IF EXISTS footprints;
 CREATE TABLE IF NOT EXISTS footprints (
@@ -61,4 +61,4 @@ CREATE TABLE IF NOT EXISTS footprints (
   `user_id` int NOT NULL,
   `owner_id` int NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -1,4 +1,4 @@
-package Kossy::Request;
+package _Kossy::Request;
 
 use strict;
 use warnings;

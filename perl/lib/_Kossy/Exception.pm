@@ -1,4 +1,4 @@
-package Kossy::Exception;
+package _Kossy::Exception;
 
 use strict;
 use warnings;

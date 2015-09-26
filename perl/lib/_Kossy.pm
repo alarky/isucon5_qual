@@ -1,4 +1,4 @@
-package Kossy;
+package _Kossy;
 
 use strict;
 use warnings;

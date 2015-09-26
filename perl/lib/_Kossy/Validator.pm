@@ -1,4 +1,4 @@
-package Kossy::Validator;
+package _Kossy::Validator;
 
 use 5.008005;
 use strict;
@@ -163,7 +163,7 @@ sub check {
     Kossy::Validator::Result->new(\@errors,$valid);
 }
 
-package Kossy::Validator::Result;
+package _Kossy::Validator::Result;
 
 use strict;
 use warnings;
