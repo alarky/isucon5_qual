@@ -12,7 +12,7 @@ sub db {
     $db ||= do {
         my %db = (
             host => $ENV{ISUCON5_DB_HOST} || 'localhost',
-            port => $ENV{ISUCON5_DB_PORT} || 3306,
+            port => "", #$ENV{ISUCON5_DB_PORT} || 3306,
             username => $ENV{ISUCON5_DB_USER} || 'root',
             password => $ENV{ISUCON5_DB_PASSWORD},
             database => $ENV{ISUCON5_DB_NAME} || 'isucon5q',
