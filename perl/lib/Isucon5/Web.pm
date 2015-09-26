@@ -349,20 +349,21 @@ post '/profile/:account_name' => [qw(set_global authenticated)] => sub {
     my $birthday = $c->req->param('birthday');
     my $pref = $c->req->param('pref');
 
-    my $prof = db->select_row('SELECT * FROM profiles WHERE user_id = ?', current_user()->{id});
-    if ($prof) {
-      my $query = <<SQL;
-UPDATE profiles
-SET first_name=?, last_name=?, sex=?, birthday=?, pref=?, updated_at=CURRENT_TIMESTAMP()
-WHERE user_id = ?
+
+    my $query = <<SQL;
+INSERT INTO profiles
+(user_id, first_name, last_name, sex, birthday, pref, updated_at)
+VALUES
+(?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP())
+ON DUPLICATE KEY UPDATE
+first_name = ?,
+last_name = ?,
+sex = ?,
+birthday = ?,
+pref = ?,
+updated_at = CURRENT_TIMESTAMP()
 SQL
-        db->query($query, $first_name, $last_name, $sex, $birthday, $pref, current_user()->{id});
-    } else {
-        my $query = <<SQL;
-INSERT INTO profiles (user_id,first_name,last_name,sex,birthday,pref) VALUES (?,?,?,?,?,?)
-SQL
-        db->query($query, current_user()->{id}, $first_name, $last_name, $sex, $birthday, $pref);
-    }
+    db->query($query, current_user()->{id}, $first_name, $last_name, $sex, $birthday, $pref, $first_name, $last_name, $sex, $birthday, $pref);
     redirect('/profile/'.$account_name);
 };
 
