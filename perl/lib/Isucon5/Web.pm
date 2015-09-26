@@ -71,15 +71,21 @@ SQL
     return $result;
 }
 
+my %user_of;
 sub current_user {
     my ($self, $c) = @_;
     my $user = stash()->{user};
 
     return $user if ($user);
 
-    return undef if (!session()->{user_id});
+    my $user_id = session()->{user_id};
+    return undef if (!$user_id);
 
-    $user = db->select_row('SELECT id, account_name, nick_name, email FROM users WHERE id=?', session()->{user_id});
+    if (exists $user_of{$user_id}) {
+	$user = $user_of{$user_id};
+    } else {
+        $user = $user_of{$user_id} = db->select_row('SELECT id, account_name, nick_name, email FROM users WHERE id=?', $user_id);
+    }
     if (!$user) {
         session()->{user_id} = undef;
         abort_authentication_error();
@@ -89,9 +95,11 @@ sub current_user {
 
 sub get_user {
     my ($user_id) = @_;
-    my $user = db->select_row('SELECT * FROM users WHERE id = ?', $user_id);
-    abort_content_not_found() if (!$user);
-    return $user;
+    unless (exists $user_of{$user_id}) {
+	$user_of{$user_id} = db->select_row('SELECT * FROM users WHERE id = ?', $user_id);
+    }
+    abort_content_not_found() if (!$user_of{$user_id});
+    return $user_of{$user_id};
 }
 
 sub user_from_account {
@@ -451,10 +459,10 @@ SQL
 
 get '/friends' => [qw(set_global authenticated)] => sub {
     my ($self, $c) = @_;
-    my $query = 'SELECT * FROM relations WHERE one = ? OR another = ? ORDER BY created_at DESC';
+    my $query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
     my %friends = ();
     my $friends = [];
-    for my $rel (@{db->select_all($query, current_user()->{id}, current_user()->{id})}) {
+    for my $rel (@{db->select_all($query, current_user()->{id})}) {
         my $key = ($rel->{one} == current_user()->{id} ? 'another' : 'one');
         $friends{$rel->{$key}} ||= do {
             my $friend = get_user($rel->{$key});
