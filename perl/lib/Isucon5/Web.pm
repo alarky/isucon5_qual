@@ -458,7 +458,7 @@ SQL
 
 get '/friends' => [qw(set_global authenticated)] => sub {
     my ($self, $c) = @_;
-    my $query = 'SELECT * FROM relations WHERE one = ? ORDER BY created_at DESC';
+    my $query = 'SELECT * FROM relations WHERE one = ? ORDER BY id DESC';
     my %friends = ();
     my $friends = [];
     for my $rel (@{db->select_all($query, current_user()->{id})}) {
